@@ -21,37 +21,34 @@
   </script>
   <script src="https://www.chatbase.co/embed.min.js" defer></script>
 
-  <!-- SAFE schema loader: waits for registerFormSchema -->
-  <script>
-    (function registerWhenReady(actionName, schemaFactory) {
-      function tryRegister() {
-        if (window.chatbase && typeof window.chatbase.registerFormSchema === 'function') {
-          window.chatbase.registerFormSchema({ [actionName]: schemaFactory });
-        } else {
-          setTimeout(tryRegister, 100);
-        }
-      }
-      tryRegister();
-    })('Lead_Collect', async (args, user) => {
-      return {
-        fields: [
-          { name: "parent_name", label: "Parent’s full name", type: "text",
-            placeholder: "Enter your full name",
-            validation: { required: { value: true, message: "Name is required" } } },
-          { name: "email", label: "Email", type: "text",
-            placeholder: "Enter your email",
-            validation: { required: { value: true, message: "Email is required" } } },
-          { name: "phone", label: "Phone", type: "text",
-            placeholder: "Enter phone in international format, e.g., +92XXXXXXXXXX",
-            validation: { required: { value: true, message: "Phone is required" } } },
-          { name: "country", label: "Country (optional)", type: "text",
-            placeholder: "2-letter code (e.g., PK, FR)" }
-        ],
-        submitButtonText: "Send",
-        successMessage: "Thanks! We’ll get back to you soon.",
-        errorMessage: "Something went wrong. Please try again."
-      };
-    });
-  </script>
+  <!-- Client-side Custom Form schema: MUST match the Chatbase Action name and input names -->
+<script>
+  window.chatbase = window.chatbase || {};
+  (function registerWhenReady(actionName, schemaFactory) {
+    function tryRegister() {
+      if (window.chatbase && typeof window.chatbase.registerFormSchema === 'function') {
+        window.chatbase.registerFormSchema({ [actionName]: schemaFactory });
+      } else { setTimeout(tryRegister, 100); }
+    }
+    tryRegister();
+  })('pre_enrolment_form', async (args, user) => {
+    return {
+      fields: [
+        { type: "text",    name: "first_name",        label: "First name", required: true },
+        { type: "text",    name: "last_name",         label: "Last name",  required: true },
+        { type: "email",   name: "email",             label: "Email",      required: true },
+        { type: "text",    name: "phone",             label: "Phone (+CC…)", required: true,
+          placeholder: "e.g., +971501234567" },
+        { type: "text",    name: "target_program",    label: "Target program", required: true },
+        { type: "text",    name: "desired_intake",    label: "Desired intake (e.g., Sep 2025)", required: true },
+        { type: "checkbox",name: "consent",           label: "I agree to be contacted", required: true }
+      ],
+      submitButtonText: "Submit pre-enrolment",
+      successMessage: "Thanks! We’ll contact you shortly.",
+      errorMessage: "Something went wrong. Please try again."
+    };
+  });
+</script>
+
 </body>
 </html>
