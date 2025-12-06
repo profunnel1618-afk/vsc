@@ -7,12 +7,23 @@
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 40px; }
     main { max-width: 780px; margin: auto; }
+    .debug { margin-top: 24px; padding: 12px; border: 1px dashed #ccc; font-size: 12px; }
+    .debug p { margin: 6px 0; }
   </style>
 </head>
 <body>
   <main>
     <h1>Virtual School Demo</h1>
     <p>Test the EduSmartBot on this page.</p>
+
+    <!-- Zone de debug visible (facilite les captures pour support) -->
+    <div id="cb-debug" class="debug">
+      <strong>Chatbase Form Debug</strong>
+      <p id="cb-log-1">[init] Waiting for widget & registerFormSchema…</p>
+      <p id="cb-log-2">—</p>
+      <p id="cb-log-3">—</p>
+      <p id="cb-log-4">—</p>
+    </div>
   </main>
 
   <!-- 1) Chatbase widget (load first) -->
@@ -27,71 +38,101 @@
   <script>
     (function () {
       var registered = false;
+      var t0 = Date.now();
+
+      var $l1 = document.getElementById('cb-log-1');
+      var $l2 = document.getElementById('cb-log-2');
+      var $l3 = document.getElementById('cb-log-3');
+      var $l4 = document.getElementById('cb-log-4');
+
+      function log(where, msg) {
+        var el = where === 1 ? $l1 : where === 2 ? $l2 : where === 3 ? $l3 : $l4;
+        if (el) el.textContent = msg;
+        console.log(msg);
+      }
+
+      function checkApiPresence() {
+        var hasCB = !!window.chatbase;
+        var hasReg = hasCB && typeof window.chatbase.registerFormSchema === 'function';
+        log(2, "[probe] chatbase present: " + hasCB + " | registerFormSchema: " + hasReg + " | t=" + (Date.now()-t0) + "ms");
+        return hasReg;
+      }
 
       function registerForm() {
         if (registered) return;
-        if (window.chatbase && typeof window.chatbase.registerFormSchema === 'function') {
-          window.chatbase.registerFormSchema({
-            "pre_enrolment_form": async (args, user) => {
-              return {
-                fields: [
-                  {
-                    type: "text",
-                    name: "full_name",
-                    label: "Full name",
-                    placeholder: "Enter your full name",
-                    validation: { required: { value: true, message: "Name is required" } }
-                  },
-                  {
-                    type: "text",
-                    name: "email",
-                    label: "Email",
-                    placeholder: "name@example.com",
-                    validation: { required: { value: true, message: "Email is required" } }
-                  },
-                  {
-                    type: "text",
-                    name: "phone",
-                    label: "WhatsApp phone (+CC…)",
-                    placeholder: "e.g., +971501234567",
-                    validation: { required: { value: true, message: "Phone is required" } }
-                  },
-                  {
-                    type: "text",
-                    name: "program_interest",
-                    label: "Program of interest",
-                    placeholder: "e.g., Web Dev",
-                    validation: { required: { value: true, message: "Program is required" } }
-                  },
-                  {
-                    type: "text",
-                    name: "intake_month",
-                    label: "Desired intake (e.g., Sep 2025)",
-                    placeholder: "e.g., Sep 2025",
-                    validation: { required: { value: true, message: "Intake month is required" } }
-                  },
-                  {
-                    type: "checkbox",
-                    name: "consent",
-                    label: "I agree to be contacted",
-                    validation: { required: { value: true, message: "Consent is required" } }
-                  }
-                ],
-                submitButtonText: "Submit",
-                successMessage: "Thanks! We’ll contact you shortly.",
-                errorMessage: "Something went wrong. Please try again."
-              };
-            }
-          });
-          registered = true;
-          console.log('[chatbase] schema registered for pre_enrolment_form');
+        if (checkApiPresence()) {
+          try {
+            window.chatbase.registerFormSchema({
+              "pre_enrolment_form": async (args, user) => {
+                return {
+                  fields: [
+                    {
+                      type: "text",
+                      name: "full_name",
+                      label: "Full name",
+                      placeholder: "Enter your full name",
+                      validation: { required: { value: true, message: "Name is required" } }
+                    },
+                    {
+                      type: "text",
+                      name: "email",
+                      label: "Email",
+                      placeholder: "name@example.com",
+                      validation: { required: { value: true, message: "Email is required" } }
+                    },
+                    {
+                      type: "text",
+                      name: "phone",
+                      label: "WhatsApp phone (+CC…)",
+                      placeholder: "e.g., +971501234567",
+                      validation: { required: { value: true, message: "Phone is required" } }
+                    },
+                    {
+                      type: "text",
+                      name: "program_interest",
+                      label: "Program of interest",
+                      placeholder: "e.g., Web Dev",
+                      validation: { required: { value: true, message: "Program is required" } }
+                    },
+                    {
+                      type: "text",
+                      name: "intake_month",
+                      label: "Desired intake (e.g., Sep 2025)",
+                      placeholder: "e.g., Sep 2025",
+                      validation: { required: { value: true, message: "Intake month is required" } }
+                    },
+                    {
+                      type: "checkbox",
+                      name: "consent",
+                      label: "I agree to be contacted",
+                      validation: { required: { value: true, message: "Consent is required" } }
+                    }
+                  ],
+                  submitButtonText: "Submit",
+                  successMessage: "Thanks! We’ll contact you shortly.",
+                  errorMessage: "Something went wrong. Please try again."
+                };
+              }
+            });
+            registered = true;
+            log(3, "[chatbase] schema registered for 'pre_enrolment_form' at t=" + (Date.now()-t0) + "ms");
+          } catch (e) {
+            log(3, "[error] registerFormSchema threw: " + (e && e.message ? e.message : e));
+          }
         } else {
           setTimeout(registerForm, 150);
         }
       }
 
-      // Start polling after the embed script is parsed
+      // Poll until API exists (widget is deferred)
       registerForm();
+
+      // Safety: after 8s, si pas d'API, log explicite (utile au support)
+      setTimeout(function(){
+        if (!registered) {
+          log(4, "[warn] Form schema not registered after 8000ms. Please capture HAR + console for support.");
+        }
+      }, 8000);
     })();
   </script>
 </body>
