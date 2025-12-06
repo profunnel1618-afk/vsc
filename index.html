@@ -15,31 +15,41 @@
     <p>Test the EduSmartBot on this page.</p>
   </main>
 
-  <!-- Chatbase widget -->
+  <!-- 1) Chatbase widget (load first) -->
   <script>
-  window.chatbase = window.chatbase || {};
-  (function registerWhenReady(actionName, schemaFactory) {
-    function tryRegister() {
-      if (window.chatbase && typeof window.chatbase.registerFormSchema === 'function') {
-        window.chatbase.registerFormSchema({ [actionName]: schemaFactory });
-        console.log('[chatbase] schema registered for', actionName);
-      } else { setTimeout(tryRegister, 100); }
-    }
-    tryRegister();
-  })('pre_enrolment_form', async () => ({
-    fields: [
-      { type: "text",    name: "full_name",        label: "Full name", required: true },
-      { type: "email",   name: "email",            label: "Email",     required: true },
-      { type: "text",    name: "phone",            label: "WhatsApp phone (+CC…)", required: true, placeholder: "e.g., +971501234567" },
-      { type: "text",    name: "program_interest", label: "Program of interest", required: true },
-      { type: "text",    name: "intake_month",     label: "Desired intake (e.g., Sep 2025)", required: true },
-      { type: "checkbox",name: "consent",          label: "I agree to be contacted", required: true }
-    ],
-    submitButtonText: "Submit",
-    successMessage: "Thanks! We’ll contact you shortly.",
-    errorMessage: "Something went wrong. Please try again."
-  }));
-</script>
+    /* ⚠️ Ensure this is the EXACT bot ID from Deploy → Web of the bot
+       that contains the 'pre_enrolment_form' client-side action */
+    window.chatbaseConfig = { chatbotId: "PqCH9sQBjkLjI_rQCRRwY" };
+  </script>
+  <script src="https://www.chatbase.co/embed.min.js" defer></script>
 
+  <!-- 2) Register the client-side form schema (must match Action name) -->
+  <script>
+    window.chatbase = window.chatbase || {};
+    (function registerWhenReady(actionName, schemaFactory) {
+      function tryRegister() {
+        if (window.chatbase && typeof window.chatbase.registerFormSchema === 'function') {
+          window.chatbase.registerFormSchema({ [actionName]: schemaFactory });
+          console.log('[chatbase] schema registered for', actionName);
+        } else { setTimeout(tryRegister, 100); }
+      }
+      tryRegister();
+    })('pre_enrolment_form', async () => ({
+      fields: [
+        { type: "text",    name: "full_name",        label: "Full name", required: true,
+          placeholder: "Enter your full name" },
+        { type: "email",   name: "email",            label: "Email", required: true,
+          placeholder: "Enter your email" },
+        { type: "text",    name: "phone",            label: "WhatsApp phone (+CC…)", required: true,
+          placeholder: "e.g., +971501234567" },
+        { type: "text",    name: "program_interest", label: "Program of interest", required: true },
+        { type: "text",    name: "intake_month",     label: "Desired intake (e.g., Sep 2025)", required: true },
+        { type: "checkbox",name: "consent",          label: "I agree to be contacted", required: true }
+      ],
+      submitButtonText: "Submit",
+      successMessage: "Thanks! We’ll contact you shortly.",
+      errorMessage: "Something went wrong. Please try again."
+    }));
+  </script>
 </body>
 </html>
