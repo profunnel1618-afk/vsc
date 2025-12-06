@@ -1,53 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pre-Enrolment Form Integration</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Virtual School Demo</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 40px; }
+    main { max-width: 780px; margin: auto; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Virtual School Demo</h1>
+    <p>Test the EduSmartBot on this page.</p>
+  </main>
 
-  <!-- Chatbase Embed Script (MUST load first) -->
+  <!-- Chatbase widget (modern init pattern) -->
   <script>
     (function(){
-      if(!window.chatbase||window.chatbase("getState")!=="initialized"){
-        window.chatbase=(...arguments)=>(window.chatbase.q=window.chatbase.q||[]).push(arguments)
+      if (!window.chatbase || window.chatbase("getState") !== "initialized") {
+        window.chatbase = (...args) => (window.chatbase.q = window.chatbase.q || []).push(args);
       }
-      window.chatbase("init",{
+      window.chatbase("init", {
         chatbotId: "PqCH9sQBjkLjI_rQCRRwY",
         domain: "www.chatbase.co"
-      })
+      });
     })();
   </script>
   <script src="https://www.chatbase.co/embed.min.js" defer></script>
-</head>
-<body>
 
-  <h1>Welcome — Pre-Enrolment</h1>
-  <p>Chat with our assistant to begin your enrolment process.</p>
-
-  <!-- Form Schema Registration (after embed script) -->
+  <!-- Client-side Custom Form schema -->
   <script>
   (function() {
     'use strict';
 
-    const FORM_KEY = 'pre_enrolment_form'; // MUST match Chatbase Action name exactly
+    const ACTION_NAME = 'pre_enrolment_form'; // MUST match Chatbase Action name exactly
     let registered = false;
 
     /**
-     * Poller: waits for window.chatbase.registerFormSchema to exist
-     * Avoids shadowing the global object [[4]]
+     * Poller: waits for registerFormSchema to exist
+     * REMOVED: window.chatbase = window.chatbase || {} (causes shadowing)
      */
     function waitForChatbase(callback, maxAttempts = 50, interval = 100) {
       let attempts = 0;
       const poll = setInterval(() => {
         attempts++;
-        console.log(`[chatbase-poller] Attempt ${attempts}: checking for registerFormSchema...`);
+        console.log(`[chatbase-poller] Attempt ${attempts}: checking registerFormSchema...`);
 
         if (
           typeof window.chatbase === 'function' &&
           typeof window.chatbase.registerFormSchema === 'function'
         ) {
           clearInterval(poll);
-          console.log('[chatbase-poller] ✅ registerFormSchema is available');
+          console.log('[chatbase-poller] ✅ registerFormSchema available');
           callback();
         } else if (attempts >= maxAttempts) {
           clearInterval(poll);
@@ -57,76 +62,87 @@
     }
 
     /**
-     * The form schema function
+     * Schema factory function
      * Signature: async (args, user) => FormSchema
+     * FIX: Changed from { required: true } to { validation: { required: { value, message } } }
      */
     async function preEnrolmentSchema(args, user) {
-      console.log('[chatbase] preEnrolmentSchema invoked with:', { args, user });
+      console.log('[chatbase] Schema function invoked with:', { args, user });
 
       return {
         fields: [
           {
-            name: 'full_name',
             type: 'text',
-            label: 'Full Name',
-            placeholder: 'Enter your full name',
+            name: 'first_name',
+            label: 'First name',
+            placeholder: 'Enter your first name',
             validation: {
-              required: {
-                value: true,
-                message: 'Full name is required'
-              }
+              required: { value: true, message: 'First name is required' }
             }
           },
           {
+            type: 'text',
+            name: 'last_name',
+            label: 'Last name',
+            placeholder: 'Enter your last name',
+            validation: {
+              required: { value: true, message: 'Last name is required' }
+            }
+          },
+          {
+            type: 'text',  // FIX: Changed from "email" to "text" for compatibility
             name: 'email',
-            type: 'text', // text for maximum compatibility
-            label: 'Email Address',
+            label: 'Email',
             placeholder: 'you@example.com',
             validation: {
-              required: {
-                value: true,
-                message: 'Email is required'
-              }
+              required: { value: true, message: 'Email is required' }
             }
           },
           {
+            type: 'text',
             name: 'phone',
-            type: 'text', // text to preserve E.164 format (+1234567890)
-            label: 'Phone Number',
-            placeholder: '+1 555 123 4567',
+            label: 'Phone (+CC…)',
+            placeholder: 'e.g., +971501234567',
             validation: {
-              required: {
-                value: true,
-                message: 'Phone number is required'
-              }
+              required: { value: true, message: 'Phone number is required' }
             }
           },
           {
-            name: 'program_interest',
-            type: 'select',
-            label: 'Program of Interest',
-            placeholder: 'Select a program',
-            options: [
-              { label: 'Certificate Program', value: 'certificate' },
-              { label: 'Diploma Program', value: 'diploma' },
-              { label: 'Degree Program', value: 'degree' }
-            ],
+            type: 'text',
+            name: 'target_program',
+            label: 'Target program',
+            placeholder: 'e.g., Business Administration',
             validation: {
-              required: {
-                value: true,
-                message: 'Please select a program'
-              }
+              required: { value: true, message: 'Target program is required' }
+            }
+          },
+          {
+            type: 'text',
+            name: 'desired_intake',
+            label: 'Desired intake (e.g., Sep 2025)',
+            placeholder: 'e.g., Sep 2025',
+            validation: {
+              required: { value: true, message: 'Desired intake is required' }
+            }
+          },
+          {
+            type: 'checkbox',
+            name: 'consent',
+            label: 'I agree to be contacted',
+            validation: {
+              required: { value: true, message: 'You must agree to be contacted' }
             }
           }
         ],
-        submitButtonText: 'Submit Pre-Enrolment',
-        successMessage: 'Thank you! Your pre-enrolment has been received.',
-        errorMessage: 'Something went wrong. Please try again or contact support.'
+        submitButtonText: 'Submit pre-enrolment',
+        successMessage: 'Thanks! We'll contact you shortly.',
+        errorMessage: 'Something went wrong. Please try again.'
       };
     }
 
     /**
-     * Register the schema once
+     * Register the schema ONCE
+     * FIX: Changed from registerFormSchema({ [name]: fn }) to registerFormSchema(name, fn)
      */
     function registerSchema() {
       if (registered) {
@@ -135,18 +151,16 @@
       }
 
       try {
-        window.chatbase.registerFormSchema(FORM_KEY, preEnrolmentSchema);
+        // CORRECT signature: two arguments (string, function)
+        window.chatbase.registerFormSchema(ACTION_NAME, preEnrolmentSchema);
         registered = true;
-        console.log(`[chatbase] ✅ Schema registered for "${FORM_KEY}"`);
-
-        // DEBUG: Confirm registration payload
-        console.log('[chatbase] Registered function reference:', preEnrolmentSchema);
+        console.log(`[chatbase] ✅ Schema registered for "${ACTION_NAME}"`);
       } catch (err) {
         console.error('[chatbase] ❌ Registration failed:', err);
       }
     }
 
-    // Initialize
+    // Initialize after page load
     if (document.readyState === 'complete') {
       waitForChatbase(registerSchema);
     } else {
