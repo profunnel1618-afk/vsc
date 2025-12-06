@@ -28,25 +28,25 @@
     function tryRegister() {
       if (window.chatbase && typeof window.chatbase.registerFormSchema === 'function') {
         window.chatbase.registerFormSchema({ [actionName]: schemaFactory });
+        console.log('[chatbase] schema registered for', actionName);
       } else { setTimeout(tryRegister, 100); }
     }
     tryRegister();
-  })('pre_enrolment_form', async (args, user) => {
-    return {
-      fields: [
-        { type: "text",    name: "full_name",        label: "Full name", required: true },
-        { type: "email",   name: "email",            label: "Email",     required: true },
-        { type: "text",    name: "phone",            label: "WhatsApp phone (+CC…)", required: true, placeholder: "e.g., +971501234567" },
-        { type: "text",    name: "program_interest", label: "Program of interest", required: true },
-        { type: "text",    name: "intake_month",     label: "Desired intake (e.g., Sep 2025)", required: true },
-        { type: "checkbox",name: "consent",          label: "I agree to be contacted", required: true }
-      ],
-      submitButtonText: "Submit",
-      successMessage: "Thanks! We’ll contact you shortly.",
-      errorMessage: "Something went wrong. Please try again."
-    };
-  });
+  })('pre_enrolment_form', async () => ({
+    fields: [
+      { type: "text",    name: "full_name",        label: "Full name", required: true },
+      { type: "email",   name: "email",            label: "Email",     required: true },
+      { type: "text",    name: "phone",            label: "WhatsApp phone (+CC…)", required: true, placeholder: "e.g., +971501234567" },
+      { type: "text",    name: "program_interest", label: "Program of interest", required: true },
+      { type: "text",    name: "intake_month",     label: "Desired intake (e.g., Sep 2025)", required: true },
+      { type: "checkbox",name: "consent",          label: "I agree to be contacted", required: true }
+    ],
+    submitButtonText: "Submit",
+    successMessage: "Thanks! We’ll contact you shortly.",
+    errorMessage: "Something went wrong. Please try again."
+  }));
 </script>
+
 
 </body>
 </html>
