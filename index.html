@@ -23,115 +23,30 @@
 
   <!-- Client-side Custom Form schema: MUST match the Chatbase Action name -->
   <script>
-    (function registerWhenReady(actionName, schemaFactory) {
-      function tryRegister() {
-        if (window.chatbase && typeof window.chatbase.registerFormSchema === "function") {
-          window.chatbase.registerFormSchema({ [actionName]: schemaFactory });
-        } else {
-          setTimeout(tryRegister, 100);
-        }
-      }
-      tryRegister();
-    })("pre_enrolment_form", async (args, user) => {
-      return {
-        fields: [
-          {
-            type: "text",
-            name: "first_name",
-            label: "First name",
-            placeholder: "Enter first name",
-            validation: {
-              required: {
-                value: true,
-                message: "First name is required"
-              }
-            }
-          },
-          {
-            type: "text",
-            name: "last_name",
-            label: "Last name",
-            placeholder: "Enter last name",
-            validation: {
-              required: {
-                value: true,
-                message: "Last name is required"
-              }
-            }
-          },
-          {
-            type: "email",
-            name: "email",
-            label: "Email",
-            placeholder: "Enter your email",
-            validation: {
-              required: {
-                value: true,
-                message: "Email is required"
-              },
-              pattern: {
-                value: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-                message: "Please enter a valid email address"
-              }
-            }
-          },
-          {
-            type: "text",
-            name: "phone",
-            label: "Phone (+CC…)",
-            placeholder: "e.g., +971501234567",
-            validation: {
-              required: {
-                value: true,
-                message: "Phone number is required"
-              }
-            }
-          },
-          {
-            type: "text",
-            name: "target_program",
-            label: "Target program",
-            placeholder: "e.g., Primary, Middle, High",
-            validation: {
-              required: {
-                value: true,
-                message: "Target program is required"
-              }
-            }
-          },
-          {
-            type: "text",
-            name: "desired_intake",
-            label: "Desired intake",
-            placeholder: "e.g., Sep 2025",
-            validation: {
-              required: {
-                value: true,
-                message: "Desired intake is required"
-              }
-            }
-          },
-          {
-            type: "select",
-            name: "consent",
-            label: "I agree to be contacted",
-            options: [
-              { value: "yes", label: "Yes, I agree" },
-              { value: "no", label: "No" }
-            ],
-            validation: {
-              required: {
-                value: true,
-                message: "Please confirm if you agree to be contacted"
-              }
-            }
-          }
-        ],
-        submitButtonText: "Submit pre-enrolment",
-        successMessage: "Thanks! We’ll contact you shortly.",
-        errorMessage: "Something went wrong. Please try again."
-      };
-    });
-  </script>
+  window.chatbase = window.chatbase || {};
+  (function registerWhenReady(actionName, schemaFactory) {
+    function tryRegister() {
+      if (window.chatbase && typeof window.chatbase.registerFormSchema === 'function') {
+        window.chatbase.registerFormSchema({ [actionName]: schemaFactory });
+      } else { setTimeout(tryRegister, 100); }
+    }
+    tryRegister();
+  })('pre_enrolment_form', async (args, user) => {
+    return {
+      fields: [
+        { type: "text",    name: "full_name",        label: "Full name", required: true },
+        { type: "email",   name: "email",            label: "Email",     required: true },
+        { type: "text",    name: "phone",            label: "WhatsApp phone (+CC…)", required: true, placeholder: "e.g., +971501234567" },
+        { type: "text",    name: "program_interest", label: "Program of interest", required: true },
+        { type: "text",    name: "intake_month",     label: "Desired intake (e.g., Sep 2025)", required: true },
+        { type: "checkbox",name: "consent",          label: "I agree to be contacted", required: true }
+      ],
+      submitButtonText: "Submit",
+      successMessage: "Thanks! We’ll contact you shortly.",
+      errorMessage: "Something went wrong. Please try again."
+    };
+  });
+</script>
+
 </body>
 </html>
